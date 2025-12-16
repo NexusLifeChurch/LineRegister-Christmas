@@ -174,7 +174,7 @@
     <script>
         // *** ตั้งค่า URL ของ Web App ที่ Deploy แล้ว (Exec URL) ที่นี่ ***
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytjJTiMIqOuH68KHfAMUZIx2Y1Wc6w0pj6psaKyqMmBg_D0qoghFbg1uruK7-Y_EbAyg/exec';
-        const LIFF_ID = 'YOUR_LIFF_ID'; // ใส่ LIFF ID ที่ได้จาก Line Developers
+        const LIFF_ID = '2008560135-QlLx9W3c'; // ใส่ LIFF ID ที่ได้จาก Line Developers
 
         // Global Variables
         let userProfile = null;
