@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียนจับฉลาก - Luv Christmas 2025</title>
+    <title>NxLife Community</title>
     
     <!-- Libraries -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -243,8 +243,8 @@
                 if (result.status === 'success' && result.data.registered) {
                     // *** กรณีลงทะเบียนแล้ว ***
                     Swal.fire({
-                        title: 'คุณลงทะเบียนแล้ว',
-                        text: 'ต้องการแก้ไขข้อมูล หรือ รับทราบ?',
+                        title: 'คุณได้ลงทะเบียนแล้ว',
+                        text: 'ไม่จำเป็นต้องลงทะเบียนซ้ำ  แต่สามารถแก้ไขข้อมูลได้',
                         icon: 'info',
                         iconColor: '#5d4037', // เปลี่ยนไอคอนเป็นสีน้ำตาล
                         showCancelButton: true,
@@ -252,7 +252,7 @@
                         cancelButtonText: 'รับทราบ',
                         confirmButtonColor: '#3e2723',
                         cancelButtonColor: '#8d6e63',
-                        reverseButtons: true
+                        reverseButtons: false // false = Confirm (Edit) on Left, Cancel (Ack) on Right
                     }).then((swalResult) => {
                         if (swalResult.isConfirmed) {
                             // กดแก้ไข
