@@ -135,10 +135,34 @@
                     <input type="text" id="fullName" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ชื่อ-นามสกุล">
                 </div>
 
-                <!-- กลุ่มแคร์ -->
+                <!-- กลุ่มแคร์ (แก้ไขเป็น Dropdown) -->
                 <div class="group">
-                    <label class="block text-sm font-medium text-[#5d4037] mb-1">กลุ่มแคร์ / โซน</label>
-                    <input type="text" id="careGroup" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ถ้ามี">
+                    <label class="block text-sm font-medium text-[#5d4037] mb-1">กลุ่มแคร์</label>
+                    <select id="careGroup" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] appearance-none cursor-pointer">
+                        <option value="" disabled selected>-- กรุณาเลือกกลุ่มแคร์ --</option>
+                        <option value="ไม่ทราบ">ไม่ทราบ</option>
+                        <option value="Beyond Life">Beyond Life</option>
+                        <option value="C.I.A">C.I.A</option>
+                        <option value="EU">EU</option>
+                        <option value="Fill-UP">Fill-UP</option>
+                        <option value="Fulfill our soul">Fulfill our soul</option>
+                        <option value="GOD7TH">GOD7TH</option>
+                        <option value="Holy Life">Holy Life</option>
+                        <option value="Indy">Indy</option>
+                        <option value="Life in Christ">Life in Christ</option>
+                        <option value="Life Kids">Life Kids</option>
+                        <option value="Live Love Life">Live Love Life</option>
+                        <option value="OCENIA">OCENIA</option>
+                        <option value="Onsite R51">Onsite R51</option>
+                        <option value="Onsite ขอนแก่น">Onsite ขอนแก่น</option>
+                        <option value="OREGON">OREGON</option>
+                        <option value="PASTOR/GL">PASTOR/GL</option>
+                        <option value="R.Y.F">R.Y.F</option>
+                        <option value="Takecare Life">Takecare Life</option>
+                        <option value="Young ชื่นบาน">Young ชื่นบาน</option>
+                        <option value="อ่างทอง">อ่างทอง</option>
+                        <option value="ไม่มีแคร์">ไม่มีแคร์</option>
+                    </select>
                 </div>
 
                 <!-- ผู้แนะนำ -->
@@ -157,7 +181,7 @@
             <!-- Action Buttons -->
             <div class="flex flex-col gap-3 pt-4">
                 <button type="submit" id="submitBtn" class="btn-coffee w-full text-white font-bold py-3.5 rounded-xl shadow-lg flex justify-center items-center gap-2">
-                    <span>ยืนยันการลงทะเบียน</span>
+                    <span id="btnText">ลงทะเบียนจับฉลาก</span> <!-- แก้ไขข้อความ default -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -216,25 +240,20 @@
                 document.getElementById('mainContainer').classList.remove('hidden');
 
                 if (result.status === 'success' && result.data.registered) {
-                    // User already registered
-                    populateForm(result.data);
+                    // *** แก้ไข Logic สำหรับคนเคยลงทะเบียนแล้ว ***
                     
+                    // 1. แจ้งเตือนว่าลงทะเบียนแล้ว
                     Swal.fire({
-                        title: 'คุณได้ลงทะเบียนแล้ว',
-                        text: 'ต้องการแก้ไขข้อมูลหรือไม่?',
+                        title: 'ลงทะเบียนแล้ว',
+                        text: 'หากต้องการแก้ไขข้อมูลสามารถแก้ได้ตลอดเวลา',
                         icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'แก้ไขข้อมูล',
-                        cancelButtonText: 'ปิดหน้าต่าง',
-                        confirmButtonColor: '#3e2723',
-                        cancelButtonColor: '#d33'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            enableEditMode();
-                        } else {
-                            liff.closeWindow();
-                        }
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#3e2723'
                     });
+
+                    // 2. แสดงข้อมูลเดิม และเปิดให้แก้ไขทันที
+                    populateForm(result.data);
+                    enableEditMode();
 
                 } else {
                     // New User
@@ -254,27 +273,15 @@
             document.getElementById('careGroup').value = data.careGroup;
             document.getElementById('referrer').value = data.referrer;
             document.getElementById('phone').value = data.phone;
-            
-            // Disable inputs initially
-            toggleInputs(false);
-            document.getElementById('submitBtn').innerText = 'บันทึกการแก้ไข';
-        }
-
-        function toggleInputs(enable) {
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => input.disabled = !enable);
-            if(enable) {
-                document.getElementById('submitBtn').classList.remove('hidden');
-                document.getElementById('cancelBtn').classList.remove('hidden');
-            } else {
-                // document.getElementById('submitBtn').classList.add('hidden');
-                document.getElementById('cancelBtn').classList.add('hidden');
-            }
         }
 
         function enableEditMode() {
             isEditing = true;
-            toggleInputs(true);
+            // เปลี่ยนข้อความปุ่มเมื่ออยู่ในโหมดแก้ไข
+            document.getElementById('btnText').innerText = 'บันทึกการแก้ไข';
+            
+            // แสดงปุ่มยกเลิก (เผื่ออยากปิด)
+            document.getElementById('cancelBtn').classList.remove('hidden');
         }
 
         document.getElementById('cancelBtn').addEventListener('click', () => {
@@ -308,8 +315,6 @@
                 phone: document.getElementById('phone').value
             };
 
-            // Use fetch with 'no-cors' is NOT recommended for JSON response reading
-            // We use standard fetch with redirect follow
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
@@ -326,7 +331,7 @@
                         confirmButtonText: 'ปิดหน้าต่าง',
                         confirmButtonColor: '#3e2723'
                     }).then(() => {
-                        liff.closeWindow();
+                        liff.closeWindow(); // ปิดหน้าต่างเมื่อกด OK
                     });
                 } else {
                     throw new Error(result.message);
