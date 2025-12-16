@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนจับฉลาก - Luv Christmas 2025</title>
+    
+    <!-- Libraries -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Config & Styles -->
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #3e2723 0%, #5d4037 50%, #8d6e63 100%);
+            min-height: 100vh;
+            color: #3e2723;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Micro-interactions */
+        .btn-coffee {
+            background: linear-gradient(45deg, #3e2723, #5d4037);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-coffee:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(62, 39, 35, 0.4);
+        }
+
+        .btn-coffee:active {
+            transform: scale(0.98);
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #efebe9;
+        }
+        
+        .input-field:focus {
+            border-color: #8d6e63;
+            box-shadow: 0 0 0 4px rgba(141, 110, 99, 0.1);
+            outline: none;
+        }
+
+        /* Loading Spinner */
+        .coffee-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #d7ccc8;
+            border-top: 5px solid #3e2723;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Fade In Animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-[#3e2723] z-50 flex flex-col items-center justify-center text-white">
+        <div class="coffee-spinner mb-4"></div>
+        <p class="animate-pulse">กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div id="mainContainer" class="hidden w-full max-w-4xl glass-card p-6 md:p-10 fade-in my-auto">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-[#3e2723] mb-2">ระบบลงทะเบียนเพื่อจับฉลากในงาน</h1>
+            <p class="text-[#8d6e63] text-lg font-medium">✨ Luv Christmas 2025 ✨</p>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="flex flex-col items-center mb-8">
+            <div class="relative">
+                <img id="userPicture" src="https://via.placeholder.com/150" alt="Profile" 
+                     class="w-24 h-24 rounded-full border-4 border-[#d7ccc8] shadow-md object-cover">
+                <div class="absolute bottom-0 right-0 bg-[#3e2723] text-white text-xs px-2 py-1 rounded-full">
+                    LINE
+                </div>
+            </div>
+            <h3 id="displayName" class="mt-3 text-lg font-semibold text-[#5d4037]">...</h3>
+        </div>
+
+        <!-- Message Box -->
+        <div class="bg-[#efebe9] p-4 rounded-xl mb-6 border-l-4 border-[#8d6e63]">
+            <p class="text-sm text-[#5d4037] leading-relaxed">
+                ✍️ กรุณากรอกข้อมูลให้ครบถ้วนในรูปแบบที่สบายใจ เพื่อให้เราสามารถระบุตัวตนผู้รับรางวัลได้อย่างถูกต้อง
+                หากไม่สะดวก สามารถกรอกข้อมูลเท่าที่ต้องการ หรือเลือกติดต่อทีมงานภายหลังได้ 🤍🎄
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form id="registerForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ชื่อเล่น -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-[#5d4037] mb-1">ชื่อเล่น *</label>
+                    <input type="text" id="nickname" required class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="เช่น น้องมายด์">
+                </div>
+
+                <!-- ชื่อจริง -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-[#5d4037] mb-1">ชื่อจริง (นามสกุลถ้าสะดวก)</label>
+                    <input type="text" id="fullName" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ชื่อ-นามสกุล">
+                </div>
+
+                <!-- กลุ่มแคร์ -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-[#5d4037] mb-1">กลุ่มแคร์ / โซน</label>
+                    <input type="text" id="careGroup" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ถ้ามี">
+                </div>
+
+                <!-- ผู้แนะนำ -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-[#5d4037] mb-1">ใครชวนมางานนี้</label>
+                    <input type="text" id="referrer" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ชื่อเพื่อนที่ชวน">
+                </div>
+            </div>
+
+            <!-- เบอร์โทร (Full Width on mobile) -->
+            <div class="group">
+                <label class="block text-sm font-medium text-[#5d4037] mb-1">เบอร์โทรศัพท์ (เพื่อติดต่อรับรางวัล)</label>
+                <input type="tel" id="phone" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="08x-xxx-xxxx">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-3 pt-4">
+                <button type="submit" id="submitBtn" class="btn-coffee w-full text-white font-bold py-3.5 rounded-xl shadow-lg flex justify-center items-center gap-2">
+                    <span>ยืนยันการลงทะเบียน</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </button>
+                
+                <button type="button" id="cancelBtn" class="hidden w-full bg-gray-200 text-gray-600 font-bold py-3.5 rounded-xl hover:bg-gray-300 transition-all">
+                    ยกเลิก / ปิดหน้าต่าง
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script Configuration -->
+    <script>
+        // *** ตั้งค่า URL ของ Web App ที่ Deploy แล้ว (Exec URL) ที่นี่ ***
+        const APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_EXEC_URL';
+        const LIFF_ID = 'YOUR_LIFF_ID'; // ใส่ LIFF ID ที่ได้จาก Line Developers
+
+        // Global Variables
+        let userProfile = null;
+        let isEditing = false;
+
+        // Initialize LIFF
+        async function main() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                userProfile = await liff.getProfile();
+                
+                // Display Profile Info
+                document.getElementById('userPicture').src = userProfile.pictureUrl || 'https://via.placeholder.com/150';
+                document.getElementById('displayName').innerText = userProfile.displayName;
+
+                // Check Registration Status
+                checkUserRegistration(userProfile.userId);
+
+            } catch (err) {
+                console.error('LIFF Init Error', err);
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเชื่อมต่อกับ LINE ได้' });
+            }
+        }
+
+        // Check if user exists in Sheet
+        async function checkUserRegistration(userId) {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=check_user&userId=${userId}`);
+                const result = await response.json();
+
+                // Hide Loading
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('mainContainer').classList.remove('hidden');
+
+                if (result.status === 'success' && result.data.registered) {
+                    // User already registered
+                    populateForm(result.data);
+                    
+                    Swal.fire({
+                        title: 'คุณได้ลงทะเบียนแล้ว',
+                        text: 'ต้องการแก้ไขข้อมูลหรือไม่?',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'แก้ไขข้อมูล',
+                        cancelButtonText: 'ปิดหน้าต่าง',
+                        confirmButtonColor: '#3e2723',
+                        cancelButtonColor: '#d33'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            enableEditMode();
+                        } else {
+                            liff.closeWindow();
+                        }
+                    });
+
+                } else {
+                    // New User
+                    // Form is ready by default
+                }
+
+            } catch (error) {
+                console.error('API Error', error);
+                Swal.fire('Error', 'ไม่สามารถดึงข้อมูลได้', 'error');
+            }
+        }
+
+        // Fill form with existing data
+        function populateForm(data) {
+            document.getElementById('nickname').value = data.nickname;
+            document.getElementById('fullName').value = data.fullName;
+            document.getElementById('careGroup').value = data.careGroup;
+            document.getElementById('referrer').value = data.referrer;
+            document.getElementById('phone').value = data.phone;
+            
+            // Disable inputs initially
+            toggleInputs(false);
+            document.getElementById('submitBtn').innerText = 'บันทึกการแก้ไข';
+        }
+
+        function toggleInputs(enable) {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => input.disabled = !enable);
+            if(enable) {
+                document.getElementById('submitBtn').classList.remove('hidden');
+                document.getElementById('cancelBtn').classList.remove('hidden');
+            } else {
+                // document.getElementById('submitBtn').classList.add('hidden');
+                document.getElementById('cancelBtn').classList.add('hidden');
+            }
+        }
+
+        function enableEditMode() {
+            isEditing = true;
+            toggleInputs(true);
+        }
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            liff.closeWindow();
+        });
+
+        // Handle Form Submit
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show Loading
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                html: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() },
+                background: '#fff',
+                color: '#3e2723'
+            });
+
+            const formData = {
+                action: isEditing ? 'update' : 'register',
+                userId: userProfile.userId,
+                displayName: userProfile.displayName,
+                pictureUrl: userProfile.pictureUrl,
+                statusMessage: userProfile.statusMessage,
+                nickname: document.getElementById('nickname').value,
+                fullName: document.getElementById('fullName').value,
+                careGroup: document.getElementById('careGroup').value,
+                referrer: document.getElementById('referrer').value,
+                phone: document.getElementById('phone').value
+            };
+
+            // Use fetch with 'no-cors' is NOT recommended for JSON response reading
+            // We use standard fetch with redirect follow
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    Swal.fire({
+                        title: 'สำเร็จ!',
+                        html: '🤍 ขอบคุณที่ร่วมเป็นส่วนหนึ่งของค่ำคืนพิเศษกับ NexusLife<br>ขอให้คุณได้รับความสุข ความอบอุ่น และความรักในคริสตมาสนี้นะครับ 🎄✨',
+                        icon: 'success',
+                        confirmButtonText: 'ปิดหน้าต่าง',
+                        confirmButtonColor: '#3e2723'
+                    }).then(() => {
+                        liff.closeWindow();
+                    });
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
+            }
+        });
+
+        // Start App
+        main();
+
+    </script>
+</body>
+</html>
