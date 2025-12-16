@@ -91,6 +91,15 @@
         <p class="animate-pulse">กำลังโหลดข้อมูล...</p>
     </div>
 
+    <!-- Completed Message (Hidden by default) -->
+    <div id="completedMessage" class="hidden fixed inset-0 bg-[#3e2723] z-50 flex flex-col items-center justify-center text-white p-6 text-center fade-in">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 text-[#d7ccc8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <h2 class="text-2xl font-bold mb-2">เรียบร้อยแล้ว</h2>
+        <p class="text-[#d7ccc8]">คุณสามารถปิดหน้าต่างนี้ได้เลย</p>
+    </div>
+
     <!-- Main Container -->
     <div id="mainContainer" class="hidden w-full max-w-4xl glass-card p-6 md:p-10 fade-in my-auto">
         
@@ -135,10 +144,10 @@
                     <input type="text" id="fullName" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] placeholder-[#d7ccc8]" placeholder="ชื่อ-นามสกุล">
                 </div>
 
-                <!-- กลุ่มแคร์ (แก้ไขเป็น Dropdown) -->
+                <!-- กลุ่มแคร์ (แก้ไข: ลบ appearance-none เพื่อให้แสดงผลบน PC ได้ถูกต้อง และลบ PASTOR/GL) -->
                 <div class="group">
                     <label class="block text-sm font-medium text-[#5d4037] mb-1">กลุ่มแคร์</label>
-                    <select id="careGroup" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] appearance-none cursor-pointer">
+                    <select id="careGroup" class="input-field w-full px-4 py-3 rounded-xl bg-white text-[#3e2723] cursor-pointer">
                         <option value="" disabled selected>-- กรุณาเลือกกลุ่มแคร์ --</option>
                         <option value="ไม่ทราบ">ไม่ทราบ</option>
                         <option value="Beyond Life">Beyond Life</option>
@@ -156,6 +165,7 @@
                         <option value="Onsite R51">Onsite R51</option>
                         <option value="Onsite ขอนแก่น">Onsite ขอนแก่น</option>
                         <option value="OREGON">OREGON</option>
+                        <!-- PASTOR/GL removed -->
                         <option value="R.Y.F">R.Y.F</option>
                         <option value="Takecare Life">Takecare Life</option>
                         <option value="Young ชื่นบาน">Young ชื่นบาน</option>
@@ -180,14 +190,14 @@
             <!-- Action Buttons -->
             <div class="flex flex-col gap-3 pt-4">
                 <button type="submit" id="submitBtn" class="btn-coffee w-full text-white font-bold py-3.5 rounded-xl shadow-lg flex justify-center items-center gap-2">
-                    <span id="btnText">ลงทะเบียนจับฉลาก</span> <!-- แก้ไขข้อความ default -->
+                    <span id="btnText">ลงทะเบียนจับฉลาก</span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                 </button>
                 
                 <button type="button" id="cancelBtn" class="hidden w-full bg-gray-200 text-gray-600 font-bold py-3.5 rounded-xl hover:bg-gray-300 transition-all">
-                    ยกเลิก / ปิดหน้าต่าง
+                    ยกเลิก
                 </button>
             </div>
         </form>
@@ -195,15 +205,12 @@
 
     <!-- Script Configuration -->
     <script>
-        // *** ตั้งค่า URL ของ Web App ที่ Deploy แล้ว (Exec URL) ที่นี่ ***
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytjJTiMIqOuH68KHfAMUZIx2Y1Wc6w0pj6psaKyqMmBg_D0qoghFbg1uruK7-Y_EbAyg/exec';
-        const LIFF_ID = '2008560135-QlLx9W3c'; // ใส่ LIFF ID ที่ได้จาก Line Developers
+        const LIFF_ID = '2008560135-QlLx9W3c';
 
-        // Global Variables
         let userProfile = null;
         let isEditing = false;
 
-        // Initialize LIFF
         async function main() {
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -214,58 +221,66 @@
                 }
 
                 userProfile = await liff.getProfile();
-                
-                // Display Profile Info
                 document.getElementById('userPicture').src = userProfile.pictureUrl || 'https://via.placeholder.com/150';
                 document.getElementById('displayName').innerText = userProfile.displayName;
 
-                // Check Registration Status
                 checkUserRegistration(userProfile.userId);
 
             } catch (err) {
                 console.error('LIFF Init Error', err);
-                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเชื่อมต่อกับ LINE ได้' });
+                Swal.fire({ icon: 'error', iconColor: '#5d4037', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเชื่อมต่อกับ LINE ได้' });
             }
         }
 
-        // Check if user exists in Sheet
         async function checkUserRegistration(userId) {
             try {
                 const response = await fetch(`${APPS_SCRIPT_URL}?action=check_user&userId=${userId}`);
                 const result = await response.json();
 
-                // Hide Loading
                 document.getElementById('loadingOverlay').classList.add('hidden');
-                document.getElementById('mainContainer').classList.remove('hidden');
+                // ยังไม่แสดง mainContainer จนกว่าจะรู้ว่าต้องทำอะไรต่อ
 
                 if (result.status === 'success' && result.data.registered) {
-                    // *** แก้ไข Logic สำหรับคนเคยลงทะเบียนแล้ว ***
-                    
-                    // 1. แจ้งเตือนว่าลงทะเบียนแล้ว
+                    // *** กรณีลงทะเบียนแล้ว ***
                     Swal.fire({
-                        title: 'ลงทะเบียนแล้ว',
-                        text: 'หากต้องการแก้ไขข้อมูลสามารถแก้ได้ตลอดเวลา',
+                        title: 'คุณลงทะเบียนแล้ว',
+                        text: 'ต้องการแก้ไขข้อมูล หรือ รับทราบ?',
                         icon: 'info',
-                        confirmButtonText: 'ตกลง',
-                        confirmButtonColor: '#3e2723'
+                        iconColor: '#5d4037', // เปลี่ยนไอคอนเป็นสีน้ำตาล
+                        showCancelButton: true,
+                        confirmButtonText: 'แก้ไขข้อมูล',
+                        cancelButtonText: 'รับทราบ',
+                        confirmButtonColor: '#3e2723',
+                        cancelButtonColor: '#8d6e63',
+                        reverseButtons: true
+                    }).then((swalResult) => {
+                        if (swalResult.isConfirmed) {
+                            // กดแก้ไข
+                            document.getElementById('mainContainer').classList.remove('hidden');
+                            populateForm(result.data);
+                            enableEditMode();
+                        } else {
+                            // กดรับทราบ -> ปิดแอพ
+                            closeApp();
+                        }
                     });
 
-                    // 2. แสดงข้อมูลเดิม และเปิดให้แก้ไขทันที
-                    populateForm(result.data);
-                    enableEditMode();
-
                 } else {
-                    // New User
-                    // Form is ready by default
+                    // *** กรณีผู้ใช้ใหม่ ***
+                    document.getElementById('mainContainer').classList.remove('hidden');
                 }
 
             } catch (error) {
                 console.error('API Error', error);
-                Swal.fire('Error', 'ไม่สามารถดึงข้อมูลได้', 'error');
+                Swal.fire({
+                    icon: 'error', 
+                    iconColor: '#5d4037',
+                    title: 'Error', 
+                    text: 'ไม่สามารถดึงข้อมูลได้'
+                });
             }
         }
 
-        // Fill form with existing data
         function populateForm(data) {
             document.getElementById('nickname').value = data.nickname;
             document.getElementById('fullName').value = data.fullName;
@@ -276,33 +291,30 @@
 
         function enableEditMode() {
             isEditing = true;
-            // เปลี่ยนข้อความปุ่มเมื่ออยู่ในโหมดแก้ไข
             document.getElementById('btnText').innerText = 'บันทึกการแก้ไข';
-            
-            // แสดงปุ่มยกเลิก (เผื่ออยากปิด)
             document.getElementById('cancelBtn').classList.remove('hidden');
         }
 
-        // Handle Cancel Button (Fix: Add Visual Feedback & Ensure Close)
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            Swal.fire({
-                icon: 'info',
-                title: 'ปิดหน้าต่าง',
-                text: 'กำลังออกจากหน้านี้...',
-                timer: 1500,
-                showConfirmButton: false,
-                background: '#fff',
-                color: '#3e2723'
-            }).then(() => {
+        // ฟังก์ชันสำหรับปิดแอพอย่างสมบูรณ์
+        function closeApp() {
+            // ซ่อนฟอร์มทันทีเพื่อป้องกันการกดซ้ำ
+            document.getElementById('mainContainer').classList.add('hidden');
+            // แสดงข้อความว่าเรียบร้อยแล้ว
+            document.getElementById('completedMessage').classList.remove('hidden');
+            
+            // สั่งปิด LIFF
+            if (liff.isInClient()) {
                 liff.closeWindow();
-            });
+            }
+        }
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            closeApp();
         });
 
-        // Handle Form Submit
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Show Loading
             Swal.fire({
                 title: 'กำลังบันทึกข้อมูล...',
                 html: 'กรุณารอสักครู่',
@@ -334,7 +346,6 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // แยกข้อความตาม Action (Register vs Update)
                     let titleText = 'สำเร็จ!';
                     let bodyText = '🤍 ขอบคุณที่ร่วมเป็นส่วนหนึ่งของค่ำคืนพิเศษกับ NexusLife<br>ขอให้คุณได้รับความสุข ความอบอุ่น และความรักในคริสตมาสนี้นะครับ 🎄✨';
                     
@@ -347,23 +358,27 @@
                         title: titleText,
                         html: bodyText,
                         icon: 'success',
-                        confirmButtonText: 'ปิดหน้าต่าง',
+                        iconColor: '#5d4037', // เปลี่ยนไอคอนเป็นสีน้ำตาล
+                        confirmButtonText: 'รับทราบ', // เปลี่ยนเป็น รับทราบ
                         confirmButtonColor: '#3e2723'
                     }).then(() => {
-                        liff.closeWindow(); // ปิดหน้าต่างเมื่อกด OK
+                        closeApp(); // เรียกฟังก์ชันปิดแอพที่ซ่อนฟอร์มด้วย
                     });
                 } else {
                     throw new Error(result.message);
                 }
 
             } catch (error) {
-                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message, 'error');
+                Swal.fire({
+                    icon: 'error',
+                    iconColor: '#5d4037',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้: ' + error.message
+                });
             }
         });
 
-        // Start App
         main();
-
     </script>
 </body>
 </html>
